@@ -83,9 +83,18 @@ async function appendMessage(message) {
 async function getPresence() {
   const redis = getRedis();
   if (redis) {
-    return (await redis.get(PRESENCE_KEY)) || {};
+    const value = (await redis.get(PRESENCE_KEY)) || {};
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return value;
+    }
+    return {};
   }
-  return global.__RETR0_MEM_STORE__.presence;
+
+  const value = global.__RETR0_MEM_STORE__.presence;
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value;
+  }
+  return {};
 }
 
 async function savePresence(presence) {
@@ -98,20 +107,28 @@ async function savePresence(presence) {
 }
 
 async function touchPresence(username) {
-  const presence = await getPresence();
-  presence[username] = Date.now();
-  await savePresence(presence);
+  try {
+    const presence = await getPresence();
+    presence[username] = Date.now();
+    await savePresence(presence);
+  } catch {
+    // Presence should never block auth/chat flows.
+  }
 }
 
 async function getOnlineUsers(windowMs) {
   const threshold = Date.now() - windowMs;
-  const presence = await getPresence();
-  const online = Object.entries(presence)
-    .filter(([, lastSeen]) => Number(lastSeen) >= threshold)
-    .sort((a, b) => Number(b[1]) - Number(a[1]))
-    .map(([username]) => username);
+  try {
+    const presence = await getPresence();
+    const online = Object.entries(presence)
+      .filter(([, lastSeen]) => Number(lastSeen) >= threshold)
+      .sort((a, b) => Number(b[1]) - Number(a[1]))
+      .map(([username]) => username);
 
-  return online;
+    return online;
+  } catch {
+    return [];
+  }
 }
 
 module.exports = {

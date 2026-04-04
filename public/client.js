@@ -212,8 +212,14 @@ async function heartbeatPresence() {
 
 async function refreshOnlineUsers() {
   const onlineRes = await fetch("/api/online", { credentials: "same-origin" });
-  if (!onlineRes.ok) {
+  if (onlineRes.status === 401) {
     location.href = "/login";
+    return;
+  }
+
+  if (!onlineRes.ok) {
+    onlineUsers = [];
+    closeMentionList();
     return;
   }
 
@@ -319,7 +325,5 @@ setInterval(() => {
 
 setInterval(() => {
   heartbeatPresence().catch(() => {});
-  refreshOnlineUsers().catch(() => {
-    location.href = "/login";
-  });
+  refreshOnlineUsers().catch(() => {});
 }, 10000);
