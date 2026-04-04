@@ -2,6 +2,14 @@ function sendJson(res, status, payload) {
   res.status(status).json(payload);
 }
 
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
 function parseCookies(req) {
   const raw = req.headers.cookie || "";
   const map = {};
@@ -17,7 +25,7 @@ function parseCookies(req) {
     }
     const key = trimmed.slice(0, splitIndex).trim();
     const value = trimmed.slice(splitIndex + 1).trim();
-    map[key] = decodeURIComponent(value);
+    map[key] = safeDecode(value);
   });
 
   return map;
