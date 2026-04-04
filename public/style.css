@@ -27,6 +27,13 @@ body {
   color: var(--ink);
 }
 
+body.page-login,
+body.page-chat {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
 body::before {
   content: "";
   position: fixed;
@@ -46,6 +53,7 @@ body::before {
 .chat-wrap {
   width: min(980px, 100%);
   margin: 0 auto;
+  flex: 1;
 }
 
 .brand {
@@ -171,7 +179,7 @@ button:hover {
 }
 
 .messages {
-  height: min(62vh, 640px);
+  height: clamp(280px, calc(100svh - 300px), 640px);
   overflow: auto;
   display: grid;
   gap: 8px;
@@ -281,6 +289,33 @@ button:hover {
   color: #8da79a;
   letter-spacing: 0.4px;
   text-shadow: 0 0 8px rgba(118, 24, 255, 0.25);
+}
+
+/* Neon scrollbar vibe */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #7a39ff #0a1210;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, #0a1210, #0f1018);
+  border-left: 1px solid #1f2c24;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2cff76, #7a39ff);
+  border-radius: 999px;
+  border: 2px solid #0a1210;
+  box-shadow: 0 0 10px rgba(118, 24, 255, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #54ff95, #9359ff);
 }
 
 .footer-link {
