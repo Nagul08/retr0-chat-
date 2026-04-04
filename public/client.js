@@ -3,6 +3,7 @@ const whoEl = document.getElementById("who");
 const formEl = document.getElementById("send-form");
 const inputEl = document.getElementById("message-input");
 let latestFingerprint = "";
+let currentUsername = "";
 
 function formatTime(isoString) {
   const date = new Date(isoString);
@@ -18,15 +19,55 @@ function escapeHtml(text) {
     .replaceAll("'", "&#39;");
 }
 
+function formatMessageText(text) {
+  const mentionRegex = /(^|[^A-Za-z0-9_])@([A-Za-z0-9_]{2,24})/g;
+  let cursor = 0;
+  let html = "";
+  let mentionsCurrentUser = false;
+
+  for (const match of text.matchAll(mentionRegex)) {
+    const fullMatch = match[0];
+    const prefix = match[1] || "";
+    const username = match[2];
+    const startIndex = match.index || 0;
+    const mentionStart = startIndex + prefix.length;
+    const mentionEnd = mentionStart + username.length + 1;
+
+    html += escapeHtml(text.slice(cursor, mentionStart));
+
+    const isCurrent = currentUsername && username.toLowerCase() === currentUsername.toLowerCase();
+    if (isCurrent) {
+      mentionsCurrentUser = true;
+    }
+
+    const cls = isCurrent ? "mention mention-self" : "mention";
+    html += `<span class="${cls}">@${escapeHtml(username)}</span>`;
+
+    cursor = mentionEnd;
+
+    if (!fullMatch.endsWith(`@${username}`)) {
+      cursor = startIndex + fullMatch.length;
+    }
+  }
+
+  html += escapeHtml(text.slice(cursor));
+
+  return {
+    html,
+    mentionsCurrentUser
+  };
+}
+
 function appendMessage(message) {
+  const formatted = formatMessageText(message.text);
   const item = document.createElement("article");
-  item.className = "msg";
+  item.className = formatted.mentionsCurrentUser ? "msg msg-mentioned" : "msg";
   item.innerHTML = `
     <div class="msg-head">
       <strong>${escapeHtml(message.user)}</strong>
       <span>${formatTime(message.time)}</span>
     </div>
-    <p>${escapeHtml(message.text)}</p>
+    <p>${formatted.html}</p>
   `;
   messagesEl.appendChild(item);
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -50,6 +91,7 @@ async function loadInitial() {
     return;
   }
   const me = await meRes.json();
+  currentUsername = me.username;
   whoEl.textContent = me.username;
 
   await refreshMessages();

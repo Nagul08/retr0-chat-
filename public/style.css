@@ -160,6 +160,11 @@ button:hover {
   background: rgba(7, 12, 10, 0.85);
 }
 
+.msg.msg-mentioned {
+  border-color: #51ff83;
+  box-shadow: 0 0 0 1px rgba(81, 255, 131, 0.25) inset;
+}
+
 .msg-head {
   display: flex;
   justify-content: space-between;
@@ -175,6 +180,17 @@ button:hover {
   margin: 0;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+}
+
+.mention {
+  color: #9f6dff;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(118, 24, 255, 0.6);
+}
+
+.mention-self {
+  color: #31ff75;
+  text-shadow: 0 0 10px rgba(25, 255, 90, 0.7);
 }
 
 .send-row {
