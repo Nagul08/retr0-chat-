@@ -1,0 +1,11 @@
+const MAX_TEXT_LENGTH = 300;
+const HISTORY_LIMIT = 100;
+const MAX_STORED_MESSAGES = 2000;
+const AUTH_COOKIE = "retr0_auth";
+
+module.exports = {
+  MAX_TEXT_LENGTH,
+  HISTORY_LIMIT,
+  MAX_STORED_MESSAGES,
+  AUTH_COOKIE
+};

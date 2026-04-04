@@ -1,0 +1,16 @@
+{
+  "name": "retr0-global-chat",
+  "version": "1.0.0",
+  "description": "Primitive global chat with name/password login",
+  "main": "server.js",
+  "scripts": {
+    "start": "npx vercel dev",
+    "dev": "npx vercel dev"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.35.6",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "express-session": "^1.18.1"
+  }
+}

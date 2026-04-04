@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>retr0 room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="page-chat">
+  <main class="chat-wrap">
+    <header class="chat-top panel">
+      <img class="brand-small" src="/retr0-f.png" alt="retr0" />
+      <div class="identity">
+        <span>you:</span>
+        <strong id="who">...</strong>
+      </div>
+      <form action="/api/logout" method="post">
+        <button type="submit">logout</button>
+      </form>
+    </header>
+
+    <section class="panel chat-panel">
+      <div id="messages" class="messages" aria-live="polite"></div>
+      <form id="send-form" class="send-row">
+        <input id="message-input" maxlength="300" autocomplete="off" placeholder="say something" required />
+        <button type="submit">send</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="/client.js"></script>
+</body>
+</html>

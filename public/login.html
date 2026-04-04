@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>retr0 login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="page-login">
+  <main class="login-wrap">
+    <img class="brand" src="/retr0-f.png" alt="retr0" />
+    <img class="ghost-svg" src="/retr0.svg" alt="" aria-hidden="true" />
+
+    <form class="panel" action="/api/auth" method="post">
+      <h1 class="title">single room login</h1>
+      <p class="subtitle">type a name and password. new names are created automatically.</p>
+
+      <label class="label" for="username">name</label>
+      <input id="username" name="username" minlength="2" maxlength="24" required />
+
+      <label class="label" for="password">password</label>
+      <input id="password" name="password" type="password" minlength="2" maxlength="64" required />
+
+      <button type="submit">enter chat</button>
+    </form>
+  </main>
+</body>
+</html>
