@@ -197,6 +197,50 @@ button:hover {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
+  align-items: start;
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.mention-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
+  border: 1px solid #2d3f33;
+  border-radius: 8px;
+  background: #09100e;
+  box-shadow: 0 0 20px rgba(118, 24, 255, 0.28);
+  overflow: hidden;
+  display: none;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.mention-list.is-open {
+  display: block;
+}
+
+.mention-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #1f2d25;
+}
+
+.mention-item:last-child {
+  border-bottom: 0;
+}
+
+.mention-item strong {
+  color: #31ff75;
+}
+
+.mention-item.active,
+.mention-item:hover {
+  background: rgba(118, 24, 255, 0.28);
 }
 
 .send-row button {

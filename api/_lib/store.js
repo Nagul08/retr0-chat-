@@ -3,11 +3,13 @@ const { MAX_STORED_MESSAGES } = require("./config");
 
 const USERS_KEY = "retr0:users";
 const MESSAGES_KEY = "retr0:messages";
+const PRESENCE_KEY = "retr0:presence";
 
 if (!global.__RETR0_MEM_STORE__) {
   global.__RETR0_MEM_STORE__ = {
     users: {},
-    messages: []
+    messages: [],
+    presence: {}
   };
 }
 
@@ -78,10 +80,46 @@ async function appendMessage(message) {
   global.__RETR0_MEM_STORE__.messages = current;
 }
 
+async function getPresence() {
+  const redis = getRedis();
+  if (redis) {
+    return (await redis.get(PRESENCE_KEY)) || {};
+  }
+  return global.__RETR0_MEM_STORE__.presence;
+}
+
+async function savePresence(presence) {
+  const redis = getRedis();
+  if (redis) {
+    await redis.set(PRESENCE_KEY, presence);
+    return;
+  }
+  global.__RETR0_MEM_STORE__.presence = presence;
+}
+
+async function touchPresence(username) {
+  const presence = await getPresence();
+  presence[username] = Date.now();
+  await savePresence(presence);
+}
+
+async function getOnlineUsers(windowMs) {
+  const threshold = Date.now() - windowMs;
+  const presence = await getPresence();
+  const online = Object.entries(presence)
+    .filter(([, lastSeen]) => Number(lastSeen) >= threshold)
+    .sort((a, b) => Number(b[1]) - Number(a[1]))
+    .map(([username]) => username);
+
+  return online;
+}
+
 module.exports = {
   getUsers,
   saveUsers,
   getMessages,
   appendMessage,
+  touchPresence,
+  getOnlineUsers,
   hasRedisConfig
 };

@@ -25,7 +25,10 @@
     <section class="panel chat-panel">
       <div id="messages" class="messages" aria-live="polite"></div>
       <form id="send-form" class="send-row">
-        <input id="message-input" maxlength="300" autocomplete="off" placeholder="say something" required />
+        <div class="input-wrap">
+          <input id="message-input" maxlength="300" autocomplete="off" placeholder="say something" required />
+          <div id="mention-list" class="mention-list" role="listbox" aria-label="Online users"></div>
+        </div>
         <button type="submit">send</button>
       </form>
     </section>

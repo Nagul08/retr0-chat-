@@ -13,7 +13,9 @@ const {
 } = require("./api/_lib/auth");
 const { sendJson } = require("./api/_lib/response");
 const { HISTORY_LIMIT, MAX_TEXT_LENGTH } = require("./api/_lib/config");
-const { getUsers, saveUsers, getMessages, appendMessage } = require("./api/_lib/store");
+const { getUsers, saveUsers, getMessages, appendMessage, touchPresence, getOnlineUsers } = require("./api/_lib/store");
+
+const ONLINE_WINDOW_MS = 45000;
 
 const app = express();
 
@@ -66,6 +68,7 @@ app.post("/api/auth", async (req, res) => {
 
   const token = createAuthToken(username);
   setAuthCookie(res, token);
+  await touchPresence(username);
   return res.redirect(302, "/chat");
 });
 
@@ -83,11 +86,34 @@ app.get("/api/me", (req, res) => {
   return sendJson(res, 200, { username });
 });
 
+app.post("/api/presence", async (req, res) => {
+  const username = getUserFromRequest(req);
+  if (!username) {
+    return sendJson(res, 401, { error: "Unauthorized" });
+  }
+
+  await touchPresence(username);
+  return sendJson(res, 200, { ok: true });
+});
+
+app.get("/api/online", async (req, res) => {
+  const username = getUserFromRequest(req);
+  if (!username) {
+    return sendJson(res, 401, { error: "Unauthorized" });
+  }
+
+  await touchPresence(username);
+  const users = await getOnlineUsers(ONLINE_WINDOW_MS);
+  return sendJson(res, 200, { users });
+});
+
 app.get("/api/messages", async (req, res) => {
   const username = getUserFromRequest(req);
   if (!username) {
     return sendJson(res, 401, { error: "Unauthorized" });
   }
+
+  await touchPresence(username);
 
   const all = await getMessages();
   return sendJson(res, 200, all.slice(-HISTORY_LIMIT));
@@ -103,6 +129,8 @@ app.post("/api/messages", async (req, res) => {
   if (!text || text.length > MAX_TEXT_LENGTH) {
     return sendJson(res, 400, { error: "Invalid message." });
   }
+
+  await touchPresence(username);
 
   const message = {
     user: username,
