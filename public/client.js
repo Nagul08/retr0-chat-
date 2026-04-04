@@ -5,12 +5,15 @@ const onlineDotEl = document.getElementById("online-dot");
 const formEl = document.getElementById("send-form");
 const inputEl = document.getElementById("message-input");
 const mentionListEl = document.getElementById("mention-list");
+const VISIBLE_POLL_MS = 5000;
 let latestFingerprint = "";
 let currentUsername = "";
 let onlineUsers = [];
 let mentionCandidates = [];
 let mentionCursor = -1;
 let mentionRange = null;
+let pollTimer = null;
+let lastStateToken = "";
 
 function formatTime(isoString) {
   const date = new Date(isoString);
@@ -191,54 +194,55 @@ function renderMessages(messages) {
 }
 
 async function loadInitial() {
-  const meRes = await fetch("/api/me", { credentials: "same-origin" });
-  if (!meRes.ok) {
-    location.href = "/login";
-    return;
-  }
-  const me = await meRes.json();
-  currentUsername = me.username;
-  whoEl.textContent = me.username;
-
-  await refreshOnlineUsers();
-  await heartbeatPresence();
-  await refreshMessages();
+  await refreshState();
+  scheduleNextPoll();
 }
 
-async function refreshMessages() {
-  const messagesRes = await fetch("/api/messages", { credentials: "same-origin" });
-  if (!messagesRes.ok) {
-    location.href = "/login";
-    return;
-  }
-  const history = await messagesRes.json();
-  renderMessages(history);
-}
-
-async function heartbeatPresence() {
-  await fetch("/api/presence", {
-    method: "POST",
-    credentials: "same-origin"
-  });
-}
-
-async function refreshOnlineUsers() {
-  const onlineRes = await fetch("/api/online", { credentials: "same-origin" });
-  if (onlineRes.status === 401) {
+async function refreshState() {
+  const query = lastStateToken ? `?since=${encodeURIComponent(lastStateToken)}` : "";
+  const stateRes = await fetch(`/api/state${query}`, { credentials: "same-origin" });
+  if (stateRes.status === 401) {
     location.href = "/login";
     return;
   }
 
-  if (!onlineRes.ok) {
+  if (!stateRes.ok) {
     onlineUsers = [];
     updateOnlineIndicator();
     closeMentionList();
     return;
   }
 
-  const payload = await onlineRes.json();
+  const payload = await stateRes.json();
+  currentUsername = payload.username || "";
+  whoEl.textContent = currentUsername;
   onlineUsers = Array.isArray(payload.users) ? payload.users : [];
+  lastStateToken = payload.stateToken ? String(payload.stateToken) : lastStateToken;
   updateOnlineIndicator();
+
+  if (payload.messagesChanged !== false) {
+    const messages = Array.isArray(payload.messages) ? payload.messages : [];
+    renderMessages(messages);
+  }
+
+  updateMentionSuggestions();
+}
+
+function scheduleNextPoll() {
+  if (pollTimer) {
+    clearTimeout(pollTimer);
+    pollTimer = null;
+  }
+
+  if (document.visibilityState !== "visible") {
+    return;
+  }
+
+  const delay = VISIBLE_POLL_MS;
+  pollTimer = setTimeout(async () => {
+    await refreshState();
+    scheduleNextPoll();
+  }, delay);
 }
 
 formEl.addEventListener("submit", async (event) => {
@@ -261,10 +265,14 @@ formEl.addEventListener("submit", async (event) => {
     return;
   }
 
+  const payload = await sendRes.json();
+
   inputEl.value = "";
   inputEl.focus();
   closeMentionList();
-  await refreshMessages();
+  if (payload && payload.message) {
+    appendMessage(payload.message);
+  }
 });
 
 inputEl.addEventListener("input", () => {
@@ -327,17 +335,13 @@ document.addEventListener("click", (event) => {
   closeMentionList();
 });
 
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    refreshState().catch(() => {});
+  }
+  scheduleNextPoll();
+});
+
 loadInitial().catch(() => {
   location.href = "/login";
 });
-
-setInterval(() => {
-  refreshMessages().catch(() => {
-    location.href = "/login";
-  });
-}, 2000);
-
-setInterval(() => {
-  heartbeatPresence().catch(() => {});
-  refreshOnlineUsers().catch(() => {});
-}, 10000);

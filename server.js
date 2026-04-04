@@ -13,7 +13,7 @@ const {
 } = require("./api/_lib/auth");
 const { sendJson } = require("./api/_lib/response");
 const { HISTORY_LIMIT, MAX_TEXT_LENGTH } = require("./api/_lib/config");
-const { getUsers, saveUsers, getMessages, appendMessage, touchPresence, getOnlineUsers } = require("./api/_lib/store");
+const { getUsers, saveUsers, getMessages, getMessagesState, appendMessage, touchPresence, getOnlineUsers } = require("./api/_lib/store");
 
 const ONLINE_WINDOW_MS = 45000;
 
@@ -105,6 +105,40 @@ app.get("/api/online", async (req, res) => {
   await touchPresence(username);
   const users = await getOnlineUsers(ONLINE_WINDOW_MS);
   return sendJson(res, 200, { users });
+});
+
+app.get("/api/state", async (req, res) => {
+  const username = getUserFromRequest(req);
+  if (!username) {
+    return sendJson(res, 401, { error: "Unauthorized" });
+  }
+
+  const since = String(req.query.since || "");
+
+  await touchPresence(username);
+  const [users, stateToken] = await Promise.all([
+    getOnlineUsers(ONLINE_WINDOW_MS),
+    getMessagesState()
+  ]);
+
+  if (since && since === stateToken) {
+    return sendJson(res, 200, {
+      username,
+      users,
+      stateToken,
+      messagesChanged: false
+    });
+  }
+
+  const allMessages = await getMessages();
+
+  return sendJson(res, 200, {
+    username,
+    users,
+    stateToken,
+    messagesChanged: true,
+    messages: allMessages.slice(-HISTORY_LIMIT)
+  });
 });
 
 app.get("/api/messages", async (req, res) => {

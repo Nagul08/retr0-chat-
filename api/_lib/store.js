@@ -3,12 +3,14 @@ const { MAX_STORED_MESSAGES } = require("./config");
 
 const USERS_KEY = "retr0:users";
 const MESSAGES_KEY = "retr0:messages";
+const MESSAGES_STATE_KEY = "retr0:messages_state";
 const PRESENCE_KEY = "retr0:presence";
 
 if (!global.__RETR0_MEM_STORE__) {
   global.__RETR0_MEM_STORE__ = {
     users: {},
     messages: [],
+    messagesState: "0",
     presence: {}
   };
 }
@@ -74,10 +76,22 @@ async function appendMessage(message) {
   const redis = getRedis();
   if (redis) {
     await redis.set(MESSAGES_KEY, current);
+    await redis.set(MESSAGES_STATE_KEY, String(Date.now()));
     return;
   }
 
   global.__RETR0_MEM_STORE__.messages = current;
+  global.__RETR0_MEM_STORE__.messagesState = String(Date.now());
+}
+
+async function getMessagesState() {
+  const redis = getRedis();
+  if (redis) {
+    const value = await redis.get(MESSAGES_STATE_KEY);
+    return value ? String(value) : "0";
+  }
+
+  return String(global.__RETR0_MEM_STORE__.messagesState || "0");
 }
 
 async function getPresence() {
@@ -135,6 +149,7 @@ module.exports = {
   getUsers,
   saveUsers,
   getMessages,
+  getMessagesState,
   appendMessage,
   touchPresence,
   getOnlineUsers,
