@@ -193,7 +193,6 @@ UPSTASH_REDIS_REST_TOKEN=replace-with-token
 |  |- style.css
 |- vercel.json
 |- package.json
-|- server.js
 ```
 
 ## Security Notes
