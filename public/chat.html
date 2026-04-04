@@ -17,6 +17,10 @@
         <span>you:</span>
         <strong id="who">...</strong>
       </div>
+      <div class="online-pill" id="online-pill" aria-live="polite">
+        <span class="online-dot" id="online-dot" aria-hidden="true"></span>
+        <span><strong id="online-count">0</strong> online</span>
+      </div>
       <form action="/api/logout" method="post">
         <button type="submit">logout</button>
       </form>

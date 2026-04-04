@@ -140,6 +140,31 @@ button:hover {
   align-items: baseline;
 }
 
+.online-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #2d3f33;
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(9, 16, 14, 0.9);
+  min-width: 110px;
+  justify-content: center;
+}
+
+.online-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #31ff75;
+  box-shadow: 0 0 10px rgba(49, 255, 117, 0.7);
+}
+
+.online-dot.off {
+  background: #69756e;
+  box-shadow: none;
+}
+
 .chat-panel {
   display: grid;
   gap: 12px;

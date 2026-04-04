@@ -1,5 +1,7 @@
 const messagesEl = document.getElementById("messages");
 const whoEl = document.getElementById("who");
+const onlineCountEl = document.getElementById("online-count");
+const onlineDotEl = document.getElementById("online-dot");
 const formEl = document.getElementById("send-form");
 const inputEl = document.getElementById("message-input");
 const mentionListEl = document.getElementById("mention-list");
@@ -167,6 +169,16 @@ function updateMentionSuggestions() {
   openMentionList(candidates, context.range);
 }
 
+function updateOnlineIndicator() {
+  const count = onlineUsers.length;
+  onlineCountEl.textContent = String(count);
+  if (count > 0) {
+    onlineDotEl.classList.remove("off");
+  } else {
+    onlineDotEl.classList.add("off");
+  }
+}
+
 function renderMessages(messages) {
   const nextFingerprint = JSON.stringify(messages.map((msg) => [msg.user, msg.text, msg.time]));
   if (nextFingerprint === latestFingerprint) {
@@ -219,12 +231,14 @@ async function refreshOnlineUsers() {
 
   if (!onlineRes.ok) {
     onlineUsers = [];
+    updateOnlineIndicator();
     closeMentionList();
     return;
   }
 
   const payload = await onlineRes.json();
   onlineUsers = Array.isArray(payload.users) ? payload.users : [];
+  updateOnlineIndicator();
 }
 
 formEl.addEventListener("submit", async (event) => {
